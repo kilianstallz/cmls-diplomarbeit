@@ -3,18 +3,23 @@
   "version": "0.0.1",
   "private": false,
   "description": "",
-  "main": "lib/charge.js",
+  "main": "./lib/charge.js",
+  "types": "./lib/charge.d.ts",
+  "files": [
+    "./lib/**/*"
+  ],
   "scripts": {
     "test": "mocha --exit -r ts-node/register --colors **/*.spec.ts",
     "test:report": "npm run test && http-server ./coverage/lcov-report/",
     "coverage": "nyc npm run test",
-    "start": "node --inspect=5858 -r ts-node/register ./src/server.ts",
+    "start": "node --inspect=5858 -r ts-node/register ./src/charge.ts",
     "dev:watch": "nodemon",
     "build": "tsc -p .",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\" ",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run coverage && npm run lint",
-    "preversion": "npm run lint",
+    "prepublishOnly": "npm run coverage",
+    "prepublishOnly_do": "npm run coverage && npm run lint",
+    "preversion_do": "npm run lint",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags"
   },
@@ -45,7 +50,8 @@
     "express": "^4.17.1",
     "ioredis": "^4.14.1",
     "merge-descriptors": "^1.0.1",
-    "mqtt": "^3.0.0"
+    "mqtt": "^3.0.0",
+    "winston": "^3.2.1"
   },
   "nodemonConfig": {
     "ignore": [
@@ -57,7 +63,7 @@
     "watch": [
       "src"
     ],
-    "exec": "npm start",
+    "exec": "npm link && npm start",
     "ext": "ts"
   },
   "nyc": {
@@ -65,9 +71,5 @@
       "lcov",
       "text"
     ]
-  },
-  "types": "dist/index.d.ts",
-  "files": [
-    "lib/**/*"
-  ]
+  }
 }
