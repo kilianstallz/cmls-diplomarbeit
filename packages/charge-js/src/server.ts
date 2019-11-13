@@ -1,78 +1,54 @@
-import express from 'express'
-import * as mqtt from 'mqtt'
-import * as dgram from 'dgram'
-import { Poller } from './polling'
+/**
+ * Config Server
+ */
 
-// Initialize App
-const app = express()
-const mqttClient = mqtt.connect()
-const udp = dgram.createSocket('udp4')
-udp.bind(7090)
+/**
+ * Module Imports
+ */
+import express, { Router } from 'express'
+import { Application } from './charge'
+import helmet from 'helmet'
+const ConfigController = require('./configServer/rest/controllers')
 
-// Express
-app.get('/', (req, res) => {
-  res.send('Server active')
-})
+/**
+ * Initialize the REST Config Server
+ * @param context The Root Application Class Context
+ * @param port The Port to listen on
+ */
+export function initializeConfigServerHTTP(context: Application, port: number = 3000) {
+  const app = express()
 
-// UDP Startup
-udp.on('listening', () => {
-  console.log('\nUDP Socket listening on port ' + 7090)
-})
+  /**
+   * Server Middleware
+   */
+  app.use(helmet())
 
-// Send test message
-udp.send('UDP STARTUP POSITIVE', 7090, 'localhost')
+  app.use('/config', ConfigController)
 
-// Message Listener
-udp.on('message', (msg, rinfo) => {
-  console.log(`UDP from ${rinfo.address}:${rinfo.port} - ${msg.toString()}`)
-})
+  app.get('/v', (req, res) => {
+    return res.status(200).send('V.OK')
+  })
 
-// MQTT Connection Listener
-mqttClient.on('connect', () => {
-  console.log('MQTT Client connected')
-})
+  app.listen(port, () => {
+    context.logger.info(`Config Server served on port ${port}`)
+  })
+}
 
-// Send and Subscribe to startup topic
-mqttClient.subscribe('startup', error => {
-  if (!error) {
-    mqttClient.publish('startup', 'POSITIVE')
-  }
-})
-
-// mqtt message listener
-mqttClient.on('message', (topic, msg) => {
-  console.log(topic, msg.toString())
-})
-
-// Main Loop
-const poller = new Poller(5000)
-poller.onPoll(() => {
-  console.log('Polling...')
-  // Get devices
-  // // Get UDP Devices
-  // // Get Modbus Devices
-  // Check device health
-  // // Check UDP Devices
-  // // Check ModbusDevices
-  // Check charger status
-  // // Get Chargin status/Auth user
-  // Process PV Data
-  // // Get current production
-  // Calculate Price
-  // Publish to Broker
-  poller.poll()
-})
-poller.poll()
-
-// Start Server
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`)
-})
-
-process.on('SIGINT', () => {
-  console.log('Shutting down all services....')
-  mqttClient.removeAllListeners()
-  udp.close()
-  process.exit()
-})
+/**
+ * Initialize the MQTT Config Server
+ */
+export function initializeConfigServerMQTT(context: Application) {
+  // if(!context.mqtt.connected) {
+  //   return
+  // }
+  context.mqtt.subscribe('config', (err, granted) => {
+    if(err) {
+      context.logger.error(err)
+    }
+  })
+  context.mqtt.subscribe('config/chargers', (err, granted) => {
+    if(err) {
+      context.logger.error(err)
+    }
+  })
+}

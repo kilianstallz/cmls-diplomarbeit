@@ -1,5 +1,5 @@
 {
-  "name": "@chargejs/charge",
+  "name": "chargejs",
   "version": "0.0.1",
   "private": false,
   "description": "",
@@ -48,6 +48,7 @@
   },
   "dependencies": {
     "express": "^4.17.1",
+    "helmet": "^3.21.2",
     "ioredis": "^4.14.1",
     "merge-descriptors": "^1.0.1",
     "mqtt": "^3.0.0",

@@ -4,27 +4,21 @@ const charge = new Application()
 
 charge.start()
 
+const mqttClient = charge.mqtt
 
-const main = new Poller(1000)
+mqttClient.on('udpMessage', data => {
+  console.log(data)
+})
+
+const main = new Poller(5000)
 
 main.onPoll(() => {
   // Main loop
   charge.requestUDP({
     port: 7090,
-    address: '10.0.0.125',
+    address: '192.168.0.102',
     message: 'report 1'
   })
-  charge.requestUDP({
-    port: 7090,
-    address: '10.0.0.125',
-    message: 'report 2'
-  })
-  charge.requestUDP({
-    port: 7090,
-    address: '10.0.0.125',
-    message: 'report 3'
-  })
-
   main.poll()
 })
 main.poll()

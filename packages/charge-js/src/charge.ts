@@ -13,6 +13,8 @@ import dns from 'dns'
 import { Logger } from './services/logger'
 import { IApplicationConfig, IUDPConfig } from './config'
 import {Poller} from './polling'
+import { initializeConfigServerHTTP, initializeConfigServerMQTT } from './server'
+import { mqttTopicHandler } from './drivers/mqtt/mqtt'
 
 /**
  * Type Checking Helpers
@@ -72,8 +74,13 @@ export class Application extends Emitter {
     // TODO: MQTT Configuration
     this.initializeMQTT()
 
+    // Initialize the config server
+    // initializeConfigServerMQTT(this)
+    initializeConfigServerHTTP(this, 3000)
+
     // Set the Init Done Flag
     this.emit('setup', true)
+
   }
 
   /**
@@ -105,6 +112,7 @@ export class Application extends Emitter {
       this.udp.on('message', (msg, rinfo) => {
         this.logger.info(`Message: ${rinfo.address}:${rinfo.port} - ${msg.toString()}`)
         // TODO: Message Handler
+        this.emit('udpMessage', {msg: msg.toString(), rinfo})
       })
       this.udp.on('error', error => {
         this.logger.error(error)
@@ -142,7 +150,8 @@ export class Application extends Emitter {
           if (msg.toString() === 'connected') {
             this.logger.info('MQTT Client connected')
           }
-          this.mqtt.removeListener('message', () => {})
+            this.logger.info(`${topic}: ${msg.toString()}`)
+            mqttTopicHandler(this, topic, msg.toString())
         })
       })
     }
