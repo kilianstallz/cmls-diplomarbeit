@@ -1,10 +1,10 @@
 {
-  "name": "chargejs",
+  "name": "cmls",
   "version": "0.0.1",
   "private": false,
   "description": "",
-  "main": "./lib/charge.js",
-  "types": "./lib/charge.d.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "files": [
     "./lib/**/*"
   ],
@@ -13,7 +13,7 @@
     "test:report": "npm run test && http-server ./coverage/lcov-report/",
     "coverage": "nyc npm run test",
     "start": "node --inspect=5858 -r ts-node/register ./src/charge.ts",
-    "dev": "nodemon",
+    "dev:watch": "nodemon",
     "build": "tsc -p .",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\" ",
     "prepare": "npm run build",
@@ -27,8 +27,6 @@
   "license": "ISC",
   "devDependencies": {
     "@types/chai": "^4.2.4",
-    "@types/express": "^4.17.2",
-    "@types/ioredis": "^4.0.18",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.12.5",
     "@typescript-eslint/eslint-plugin": "^2.6.1",
@@ -46,16 +44,7 @@
     "typescript": "^3.6.4",
     "typings": "^2.1.1"
   },
-  "dependencies": {
-    "express": "^4.17.1",
-    "helmet": "^3.21.2",
-    "ioredis": "^4.14.1",
-    "jsmodbus": "^4.0.0",
-    "merge-descriptors": "^1.0.1",
-    "mqtt": "^3.0.0",
-    "serialport": "^8.0.5",
-    "winston": "^3.2.1"
-  },
+  "dependencies": {},
   "nodemonConfig": {
     "ignore": [
       "**/*.test.ts",

@@ -5,16 +5,18 @@
 /**
  * Module Dependencies
  */
-
+import Modbus from 'jsmodbus'
 import Emitter from 'events'
 import dgram from 'dgram'
-import MQTT from 'mqtt'
+import MQTT, { MqttClient } from 'mqtt'
 import dns from 'dns'
-import { Logger } from './services/logger'
+import { globalLogger } from './services/logger'
 import { IApplicationConfig, IUDPConfig } from './config'
 import {Poller} from './polling'
 import { initializeConfigServerHTTP, initializeConfigServerMQTT } from './server'
-import { mqttTopicHandler } from './drivers/mqtt/mqtt'
+import { mqttTopicHandler, MQTTService } from './drivers/mqtt/mqtt'
+import { UDPService } from './drivers/udp/udp'
+import { eventBus } from './services/eventBus'
 
 /**
  * Type Checking Helpers
@@ -48,7 +50,7 @@ export class Application extends Emitter {
     this.options = options || this.defaultConfiguration()
     this.env = this.options.env || process.env.NODE_ENV || 'development'
     this.silent = this.options.silent || false
-    this.logger = new Logger(this.silent)
+    this.logger = globalLogger
   }
 
   /**
@@ -81,6 +83,16 @@ export class Application extends Emitter {
     // Set the Init Done Flag
     this.emit('setup', true)
 
+  }
+
+  /**
+   * Run all `start` methods to initialize the program
+   * @emits `startDrivers`
+   * @returns {void}
+   * @api public
+   */
+  init () {
+    eventBus.emit('startDrivers')
   }
 
   /**
@@ -159,6 +171,19 @@ export class Application extends Emitter {
 }
 
 /**
+ * ModbusTCP Client initialization
+ * @api private
+ */
+// const modbusSocket = new net.Socket()
+// const modbusClient = new Modbus.client.TCP(modbusSocket, 1234)
+
+// modbusClient.readCoils(0, 10).then(resp => {
+//   console.log(resp)
+// }).catch(err => {
+//   console.log(err)
+// })
+
+/**
  * Check for internet connection
  */
 export function checkConnection(cb) {
@@ -172,5 +197,7 @@ export function checkConnection(cb) {
 }
 
 export {
-  Poller
+  Poller,
+  MQTTService,
+  UDPService
 }

@@ -1,11 +1,10 @@
-import { Application, Poller } from "@chargejs/charge";
+import { Application, Poller, MQTTService, UDPService } from "@chargejs/charge"
 
 const charge = new Application();
 
-charge.start();
-
-const mqttClient = charge.mqtt;
-const udupClient = charge.udp;
+const udp = new UDPService()
+const mqtt = new MQTTService()
+const main = new Poller(5000);
 
 charge.on("udpMessage", data => {
   let _data = data;
@@ -30,18 +29,17 @@ charge.on("udpMessage", data => {
   }
 });
 
-const main = new Poller(5000);
 const deviceMap = {};
 
 // TODO: Get devices from config
 // TODO: Do health check
 
-main.onPoll(() => {
+main.cyclic(() => {
   // TODO: Get Devices from config
   // TODO: Get needed Data
 
   // Main loop
-  charge.requestUDP({
+  udp.requestUDP({
     port: 7090,
     address: "192.168.0.102",
     message: "report 2S"
@@ -49,3 +47,5 @@ main.onPoll(() => {
   main.poll();
 });
 main.poll();
+
+charge.init()

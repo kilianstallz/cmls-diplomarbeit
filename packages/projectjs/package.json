@@ -1,0 +1,25 @@
+{
+  "name": "cmlsjs",
+  "version": "0.0.1",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "nodemon"
+  },
+  "dependencies": {
+    "@chargejs/charge": "../packages/charge-js",
+    "esm": "^3.2.25"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "**/*.test.ts",
+      "**/*.spec.ts",
+      ".git",
+      "node_modules"
+    ],
+    "exec": "node -r esm index.js"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.4"
+  }
+}

@@ -5,7 +5,7 @@ import { EventEmitter } from 'events'
 
 export class Poller extends EventEmitter {
   timeout
-  constructor(timeout = 100) {
+  constructor(timeout = 2000) {
     super()
     this.timeout = timeout
   }
@@ -14,7 +14,7 @@ export class Poller extends EventEmitter {
     setTimeout(() => this.emit('poll'), this.timeout)
   }
 
-  onPoll(cb) {
+  cyclic(cb) {
     this.on('poll', cb)
   }
 }

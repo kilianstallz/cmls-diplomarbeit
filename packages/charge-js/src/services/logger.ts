@@ -12,17 +12,10 @@ let alignColorsAndLogs = format.combine(
   )
 )
 
-export class Logger {
-  silent: boolean = false
-  constructor(silent) {
-    this.silent = silent
-    return logger(this.silent)
-  }
-}
-
-const logger = (silent) => createLogger({
+export const globalLogger = createLogger({
   transports: [
-    new transports.Console({format: alignColorsAndLogs, handleExceptions: true, silent }
+    new transports.Console({format: alignColorsAndLogs, handleExceptions: true }
       )
   ]
 })
+
