@@ -1,16 +1,19 @@
 import dgram from 'dgram'
 import { eventBus } from '../../services/eventBus'
 import { globalLogger } from '../../services/logger'
+import { udpMessageHandler } from './udp.handler'
+import { EventEmitter } from 'events'
 
 /**
  * Expose The MQTT Service Class
  * @param options Provide `MQTTConfig` to the Initializer
  * @listener startDrivers Listen to the global event to start the server process
  */
-export class UDPService {
+export class UDPService extends EventEmitter {
   service: dgram.Socket
   private port: number = 7090
   constructor(options?) {
+    super()
     eventBus.on('startDrivers', () => {
       this.start()
     })
@@ -30,7 +33,7 @@ export class UDPService {
     this.service.on('message', (msg, rinfo) => {
       globalLogger.info(`Message: ${rinfo.address}:${rinfo.port}`)
       // TODO: Message Handler
-      eventBus.emit('udpMessage', {msg: msg.toString(), rinfo})
+      udpMessageHandler(this, msg.toString(), rinfo)
     })
     this.service.on('error', error => {
       globalLogger.error(error)

@@ -7,8 +7,12 @@
     "dev": "nodemon"
   },
   "dependencies": {
-    "@chargejs/charge": "../packages/charge-js",
-    "esm": "^3.2.25"
+    "esm": "^3.2.25",
+    "express": "^4.17.1",
+    "helmet": "^3.21.2",
+    "ioredis": "^4.14.1",
+    "pug": "^2.0.4",
+    "ws": "^7.2.0"
   },
   "nodemonConfig": {
     "ignore": [
@@ -20,6 +24,8 @@
     "exec": "node -r esm index.js"
   },
   "devDependencies": {
+    "@types/ioredis": "^4.0.19",
+    "@types/ws": "^6.0.3",
     "nodemon": "^1.19.4"
   }
 }

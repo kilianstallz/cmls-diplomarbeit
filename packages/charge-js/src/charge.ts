@@ -199,5 +199,5 @@ export function checkConnection(cb) {
 export {
   Poller,
   MQTTService,
-  UDPService
+  UDPService,
 }
