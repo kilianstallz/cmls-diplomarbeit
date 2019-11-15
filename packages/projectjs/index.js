@@ -48,10 +48,11 @@ wss.on('connection', (ws) => {
 
 udp.on('udpMessage', (data) => {
   const _msg = data.msg
+  let newEntry = {}
   const {Serial, ID, Sec} = _msg
-  if(ID === '2') {
+  if(ID && ID === '2') {
     const {State, Error1, Error2, Plug, AuthON, Output} = _msg
-    const newEntry = {
+    newEntry = {
       ...deviceMap[data.rinfo.address],
       currentState: {
         State, Error1, Error2, Plug, AuthON, Output,
@@ -63,15 +64,15 @@ udp.on('udpMessage', (data) => {
         Setenergy: _msg['Setenergy'],
       },
       Serial,
-      Sec
+      Sec,
     }
-    deviceMap[data.rinfo.address] = newEntry
-    wss.clients.forEach(client => {
-      if(client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify(deviceMap))
-      }
-    })
   }
+  deviceMap[data.rinfo.address] = newEntry
+  wss.clients.forEach(client => {
+    if(client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({...deviceMap, time: Date.now()}))
+    }
+  })
 })
 
 main.cyclic(() => {
@@ -87,7 +88,7 @@ main.cyclic(() => {
 
   wss.clients.forEach(client => {
     if(client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(deviceMap))
+      client.send(JSON.stringify({...deviceMap, time: Date.now()}))
     }
   })
 
