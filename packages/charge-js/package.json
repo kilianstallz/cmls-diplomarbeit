@@ -2,7 +2,7 @@
   "name": "chargejs",
   "version": "0.0.1",
   "private": false,
-  "description": "",
+  "description": "Utility libary for creating E-Mobile charging systems.",
   "main": "./lib/charge.js",
   "types": "./lib/charge.d.ts",
   "files": [
