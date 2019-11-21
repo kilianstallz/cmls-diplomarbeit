@@ -18,13 +18,12 @@ import { UDPService } from './udp'
 const udpMessageHandler = (context: UDPService, msg: string, rinfo: RemoteInfo) => {
   if(msg.startsWith('{')) {
      const _parsedMsg = JSON.parse(msg)
-     eventBus.emit('udpMessage', {msg: _parsedMsg, rinfo})
      context.emit('udpMessage', {msg: _parsedMsg, rinfo})
   } else if (msg == 'TCH-OK :done') {
     return
   } else {
-    eventBus.emit('udpError', {msg, rinfo})
-    console.error(msg, rinfo)
+    context.emit('udpError', {msg, rinfo})
+    globalLogger.info(msg, rinfo)
   }
 }
 

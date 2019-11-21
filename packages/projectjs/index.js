@@ -11,11 +11,15 @@ const wss = new WebSocket.Server({server})
 const charge = new Application();
 const udp = new UDPService();
 const mqtt = new MQTTService();
-const main = new Poller(10000);
+const main = new Poller(5000);
 
 charge.init();
 
 const startTime = Date.now()
+
+let chargerConfig = {
+  devices: [{address: '192.168.0.102', port: 7090}]
+}
 
 let deviceMap = {};
 const init = async () => {
@@ -23,21 +27,22 @@ const init = async () => {
   deviceMap = await pubsub.get("deviceMap");
   deviceMap = JSON.parse(deviceMap)
   if (!deviceMap) {
-    deviceMap = {
-      "192.168.0.102": {
-        port: 7090
+    deviceMap = {}
+    chargerConfig.devices.forEach(v => {
+      deviceMap[v.address] = {
+        port: v.port
       }
-    };
+    })
     pubsub.set("deviceMap", JSON.stringify(deviceMap));
   }
 
   // Health check stored devices
-  Object.keys(deviceMap).forEach(d => {
+  chargerConfig.devices.forEach(d => {
       // TODO: DNS LOOKUP
       // Display `OK` on the device display
       udp.requestUDP({
-        port: deviceMap[d].port,
-        address: d,
+        port: d.port,
+        address: d.address,
         message: "display 0 0 0 0 OK"
       });
   });
@@ -52,6 +57,7 @@ udp.on('udpMessage', (data) => {
   const _msg = data.msg
   let newEntry = {}
   const {Serial, ID, Sec} = _msg
+
   if(ID && ID === '2') {
     const {State, Error1, Error2, Plug, AuthON, Output} = _msg
     newEntry = {
@@ -68,6 +74,8 @@ udp.on('udpMessage', (data) => {
       Serial,
       Sec,
     }
+  } else if(ID && ID === '3') {
+    console.log(_msg)
   }
   deviceMap[data.rinfo.address] = newEntry
   wss.clients.forEach(client => {
@@ -80,14 +88,19 @@ udp.on('udpMessage', (data) => {
 main.cyclic(() => {
   // TODO: Get Devices from config
   // TODO: Get needed Data
-
-  // Main loop
-  udp.requestUDP({
-    port: 7090,
-    address: "192.168.0.102",
-    message: "report 2"
-  });
-
+  chargerConfig.devices.forEach(dev => {
+    udp.requestUDP({
+      port: dev.port,
+      address: dev.address,
+      message: "report 2"
+    });
+    udp.requestUDP({
+      port: dev.port,
+      address: dev.address,
+      message: "report 3"
+    });
+  })
+    
   wss.clients.forEach(client => {
     if(client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify({...deviceMap, time: Date.now()}))

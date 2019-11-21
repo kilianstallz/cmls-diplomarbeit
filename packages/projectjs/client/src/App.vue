@@ -1,11 +1,6 @@
 <script>
-import LineChart from "./components/LineChart";
-import { mixins } from "vue-chartjs";
-const { reactiveProp } = mixins;
 export default {
   name: "App",
-  components: { LineChart },
-  mixins: [reactiveProp],
   data() {
     return {
       show: false,

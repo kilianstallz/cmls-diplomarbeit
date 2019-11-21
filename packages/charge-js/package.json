@@ -21,7 +21,8 @@
     "prepublishOnly_do": "npm run coverage && npm run lint",
     "preversion_do": "npm run lint",
     "version": "npm run format && git add -A src",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "npmlogin": "npm login --registry=https://npm.pkg.github.com/"
   },
   "author": "Kilian Stallinger",
   "license": "ISC",
@@ -74,5 +75,8 @@
       "lcov",
       "text"
     ]
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   }
 }
