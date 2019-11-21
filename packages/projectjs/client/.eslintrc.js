@@ -8,6 +8,9 @@ module.exports = {
     '@vue/standard'
   ],
   rules: {
+    'semi': 'off',
+    'space-before-function-paren': 'off',
+    'quotes': 'off',
     'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
   },

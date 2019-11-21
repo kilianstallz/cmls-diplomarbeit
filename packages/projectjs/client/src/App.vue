@@ -1,16 +1,45 @@
+<script>
+import LineChart from "./components/LineChart";
+import { mixins } from "vue-chartjs";
+const { reactiveProp } = mixins;
+export default {
+  name: "App",
+  components: { LineChart },
+  mixins: [reactiveProp],
+  data() {
+    return {
+      show: false,
+      deviceMap: {},
+      valStore: {}
+    };
+  },
+  mounted() {
+    const ws = new WebSocket("ws://localhost:3001/");
+    ws.onmessage = data => {
+      console.log("MSG");
+      if (data.data.startsWith("{")) {
+        const _data = JSON.parse(data.data);
+        delete _data.time;
+        this.deviceMap = { ..._data };
+        Object.keys(_data).map(ip => {
+          if (!this.valStore[ip]) {
+            this.valStore[ip] = [];
+          }
+          this.valStore[ip].push({ ..._data[ip].currentState, address: ip });
+        });
+      }
+    };
+  }
+};
+</script>
+
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
-  </div>
+  <div id="app"></div>
 </template>
 
 <style lang="scss">
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;

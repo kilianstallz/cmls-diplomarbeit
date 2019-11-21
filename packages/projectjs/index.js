@@ -11,9 +11,11 @@ const wss = new WebSocket.Server({server})
 const charge = new Application();
 const udp = new UDPService();
 const mqtt = new MQTTService();
-const main = new Poller(5000);
+const main = new Poller(10000);
 
 charge.init();
+
+const startTime = Date.now()
 
 let deviceMap = {};
 const init = async () => {
@@ -70,7 +72,7 @@ udp.on('udpMessage', (data) => {
   deviceMap[data.rinfo.address] = newEntry
   wss.clients.forEach(client => {
     if(client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({...deviceMap, time: Date.now()}))
+      client.send(JSON.stringify({...deviceMap, time: startTime+Sec}))
     }
   })
 })
