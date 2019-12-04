@@ -1,12 +1,15 @@
 import { Application, Poller, MQTTService, UDPService } from "chargejs";
 import express from "express";
-import WebSocket from 'ws'
 import * as http from 'http'
 import { pubsub } from "./pubsub";
 
 const app = express();
 const server = http.createServer(app)
-const wss = new WebSocket.Server({server})
+const io = require('socket.io')(server)
+
+io.on('connection', () => {
+  console.log('Client connected')
+})
 
 const charge = new Application();
 const udp = new UDPService();
@@ -49,15 +52,11 @@ const init = async () => {
 };
 init()
 
-wss.on('connection', (ws) => {
-  ws.send('Connected!')
-})
-
 udp.on('udpMessage', (data) => {
   const _msg = data.msg
   let newEntry = {}
   const {Serial, ID, Sec} = _msg
-
+  
   if(ID && ID === '2') {
     const {State, Error1, Error2, Plug, AuthON, Output} = _msg
     newEntry = {
@@ -73,16 +72,13 @@ udp.on('udpMessage', (data) => {
       },
       Serial,
       Sec,
+      time: Date.now() + process.uptime()
     }
   } else if(ID && ID === '3') {
     console.log(_msg)
   }
   deviceMap[data.rinfo.address] = newEntry
-  wss.clients.forEach(client => {
-    if(client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({...deviceMap, time: startTime+Sec}))
-    }
-  })
+  io.emit('message', deviceMap)
 })
 
 main.cyclic(() => {
@@ -94,19 +90,8 @@ main.cyclic(() => {
       address: dev.address,
       message: "report 2"
     });
-    udp.requestUDP({
-      port: dev.port,
-      address: dev.address,
-      message: "report 3"
-    });
   })
-    
-  wss.clients.forEach(client => {
-    if(client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({...deviceMap, time: Date.now()}))
-    }
-  })
-
+  
   main.poll();
 });
 main.poll();
