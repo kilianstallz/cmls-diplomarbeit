@@ -12,11 +12,13 @@ var __assign = (this && this.__assign) || function () {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var server_1 = require("../../server");
+var events_1 = require("../../pubsub/events");
 function writeMap(data) {
     // Get the value Map
     var valueMap = server_1.store.get('valueMap') || {};
-    valueMap[data.serial] = __assign(__assign({}, valueMap[data.serial]), data);
+    valueMap[data.serial] = __assign(__assign(__assign({}, valueMap[data.serial]), data), { time: Date.now() });
     server_1.store.put('valueMap', valueMap);
+    events_1.EventBusUdp.emit('value', valueMap);
 }
 exports.writeMap = writeMap;
 /**
@@ -50,7 +52,14 @@ function udpResponseHandler(res) {
             var U1 = res.U1, U2 = res.U2, U3 = res.U3, I1 = res.I1, I2 = res.I2, I3 = res.I3, P = res.P, PF = res.PF;
             writeMap({
                 serial: res['Serial'],
-                U1: U1, U2: U2, U3: U3, I1: I1, I2: I2, I3: I3, P: P, PF: PF,
+                U1: U1,
+                U2: U2,
+                U3: U3,
+                I1: I1,
+                I2: I2,
+                I3: I3,
+                P: P,
+                PF: PF,
                 ePres: res['E pres'],
                 etotal: res['E total'],
             });
