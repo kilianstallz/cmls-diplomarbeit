@@ -1,70 +1,75 @@
+<script>
+import Highchart from 'highcharts'
+const conn = new WebSocket('ws://localhost:3001/ws')
+const chart = []
+export default {
+  methods: {
+    renderChart () {
+      const data = chart.map(v => (v['18871884'].P))
+      Highchart.chart('chart', {
+        chart: {
+          type: 'line'
+        },
+        title: {
+          text: 'Test Charger'
+        },
+        xAxis: {
+          categories: ['time']
+        },
+        yAxis: {
+          title: {
+            text: 'Charger'
+          }
+        },
+        series: [{
+          name: 'C1',
+          data: data
+        }]
+      })
+    }
+  },
+  mounted () {
+    let i = 0
+    conn.addEventListener('message', msg => {
+      if (msg.data.startsWith('{') && (i % 2 === 0)) {
+        const data = JSON.parse(msg.data)
+        chart.push(data)
+        if (chart.length > 50) {
+          chart.pop()
+        }
+        this.renderChart()
+      }
+      i++
+    })
+  }
+}
+</script>
+
 <template>
-  <div id="q-app">
-    <q-layout>
-      <q-header>
-        <q-toolbar></q-toolbar>
-      </q-header>
-      <q-page-container>
-        <q-page padding>
-          <div v-if="devices">
-            <h5>Deine Geräte</h5>
-            <div class="flex column">
-              <span v-for="d in devices" :key="d" @click="selected = d" class="cursor-pointer">{{d}}</span>
-            </div>
-          </div>
-          <div v-else>
-            <q-spinner size="32px" color="black"></q-spinner>
-          </div>
-          <div v-if="selected" class="q-my-md q-pa-md bg-grey-4">
-            <b>#{{latest[selected].Serial}}</b> - {{latest[selected].currentState.State === 0 ? 'Frei' : 'Lädt'}}
-            <br />
-            <br />
-            Output: {{latest[selected].currentState.Output}}
-            <br />
-            Max. Current: {{latest[selected].currentState.MaxCurr}}
-            <br/>
-            Auth: {{latest[selected].currentState.AuthON}}
-          </div>
-        </q-page>
-      </q-page-container>
-    </q-layout>
+  <div id="app">
+    <div id="chart" style="width: 100%; height: 500px;"></div>
   </div>
 </template>
 
-<script>
-export default {
-  name: "App",
-  data() {
-    return {
-      fetch: [],
-      latest: null,
-      selected: null,
+<style lang="scss">
+#app {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+}
+
+#nav {
+  padding: 30px;
+
+  a {
+    font-weight: bold;
+    color: #2c3e50;
+
+    &.router-link-exact-active {
+      color: #42b983;
     }
-  },
-  computed: {
-    devices() {
-      if(this.latest) {
-        return Object.keys(this.latest)
-      } else {
-        return null
-      }
-    }
-  },
-  methods: {
-    toLocalStore(data) {
-      localStorage.setItem('data', data)
-      this.fetch.push(data)
-      this.latest = data
-    }
-  },
-  mounted() {
-    this.$io.on('connect', () => {
-      console.log('connected')
-    })
-    this.$io.on('message', data => {
-      console.log('MSG', data)
-      this.toLocalStore(data)
-    })
   }
-};
-</script>
+}
+</style>

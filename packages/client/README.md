@@ -1,26 +1,34 @@
-# client (client)
+# client
 
-A Quasar Framework app
-
-## Install the dependencies
-```bash
-yarn
+## Project setup
+```
+yarn install
 ```
 
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
-```bash
-quasar dev
+### Compiles and hot-reloads for development
+```
+yarn serve
 ```
 
-### Lint the files
-```bash
-yarn run lint
+### Compiles and minifies for production
+```
+yarn build
 ```
 
-### Build the app for production
-```bash
-quasar build
+### Run your unit tests
+```
+yarn test:unit
 ```
 
-### Customize the configuration
-See [Configuring quasar.conf.js](https://quasar.dev/quasar-cli/quasar-conf-js).
+### Run your end-to-end tests
+```
+yarn test:e2e
+```
+
+### Lints and fixes files
+```
+yarn lint
+```
+
+### Customize configuration
+See [Configuration Reference](https://cli.vuejs.org/config/).

@@ -7,10 +7,12 @@ import helmet from 'helmet'
 import cors from 'cors'
 import routes from './api/routes'
 import { mqttHandler } from './pubsub/mqtt.handler'
+import * as WebSocket from 'ws'
 import LocalStorage from 'node-storage'
 
 class App {
     public app: Application
+    public wss: WebSocket.Server
     // public server: http.Server
     public mqtt: MQTT.MqttClient
     public udp: dgram.Socket
@@ -18,6 +20,11 @@ class App {
 
     constructor() {
         this.app = express()
+        this.wss = new WebSocket.Server({
+            host: 'localhost',
+            port: 3001,
+            path: '/ws'
+        })
         this.config()
         this.initMQTT()
         this.initStore()
@@ -35,6 +42,7 @@ class App {
     private initMQTT(): void {
         this.mqtt = MQTT.connect()
         mqttHandler(this.mqtt)
+        console.log(this.mqtt.options)
     }
 
     private initStore(): void {

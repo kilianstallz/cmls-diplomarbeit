@@ -17,10 +17,16 @@ var helmet_1 = __importDefault(require("helmet"));
 var cors_1 = __importDefault(require("cors"));
 var routes_1 = __importDefault(require("./api/routes"));
 var mqtt_handler_1 = require("./pubsub/mqtt.handler");
+var WebSocket = __importStar(require("ws"));
 var node_storage_1 = __importDefault(require("node-storage"));
 var App = /** @class */ (function () {
     function App() {
         this.app = express_1.default();
+        this.wss = new WebSocket.Server({
+            host: 'localhost',
+            port: 3001,
+            path: '/ws'
+        });
         this.config();
         this.initMQTT();
         this.initStore();
@@ -36,6 +42,7 @@ var App = /** @class */ (function () {
     App.prototype.initMQTT = function () {
         this.mqtt = mqtt_1.default.connect();
         mqtt_handler_1.mqttHandler(this.mqtt);
+        console.log(this.mqtt.options);
     };
     App.prototype.initStore = function () {
         this.store = new node_storage_1.default('../deviceConfig');

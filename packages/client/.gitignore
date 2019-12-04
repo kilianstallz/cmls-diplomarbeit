@@ -1,20 +1,13 @@
 .DS_Store
-.thumbs.db
 node_modules
-
-# Quasar core related directories
-.quasar
 /dist
 
-# Cordova related directories and files
-/src-cordova/node_modules
-/src-cordova/platforms
-/src-cordova/plugins
-/src-cordova/www
+/tests/e2e/videos/
+/tests/e2e/screenshots/
 
-# BEX related directories and files
-/src-bex/www
-/src-bex/js/core
+# local env files
+.env.local
+.env.*.local
 
 # Log files
 npm-debug.log*
@@ -28,3 +21,4 @@ yarn-error.log*
 *.ntvs*
 *.njsproj
 *.sln
+*.sw?
