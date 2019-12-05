@@ -4,7 +4,23 @@ import { EventBusUdp } from '../../pubsub/events'
 export function writeMap(data: any) {
   // Get the value Map
   let valueMap = store.get('valueMap') || {}
+  // Get the stream map
+  let streamMap = store.get('streamMap') || {}
+  // Update the data of the current Wallbox with new data
   valueMap[data.serial] = { ...valueMap[data.serial], ...data, time: Date.now() }
+  // Check is streammap is empty
+  // then push the current data to the stream array
+  if (!streamMap[data.serial]) {
+    streamMap[data.serial] = []
+    streamMap[data.serial].push({...data})
+  } else {
+    streamMap[data.serial].push({...data})
+  }
+  // Only keep the last 100 responses
+  if(streamMap[data.serial].length > 100) {
+    streamMap[data.serial].pop()
+  }
+  store.put('streamMap', streamMap)
   store.put('valueMap', valueMap)
   EventBusUdp.emit('value', valueMap)
 }

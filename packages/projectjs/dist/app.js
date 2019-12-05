@@ -46,9 +46,7 @@ var App = /** @class */ (function () {
     };
     App.prototype.initStore = function () {
         this.store = new node_storage_1.default('../deviceConfig');
-        var deviceConfig = [
-            { address: 'localhost', port: 7090 },
-        ];
+        var deviceConfig = this.store.get('deviceConfig');
         this.store.put('deviceConfig', deviceConfig);
     };
     App.prototype.addDevice = function () {

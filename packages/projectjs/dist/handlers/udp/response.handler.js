@@ -16,7 +16,24 @@ var events_1 = require("../../pubsub/events");
 function writeMap(data) {
     // Get the value Map
     var valueMap = server_1.store.get('valueMap') || {};
+    // Get the stream map
+    var streamMap = server_1.store.get('streamMap') || {};
+    // Update the data of the current Wallbox with new data
     valueMap[data.serial] = __assign(__assign(__assign({}, valueMap[data.serial]), data), { time: Date.now() });
+    // Check is streammap is empty
+    // then push the current data to the stream array
+    if (!streamMap[data.serial]) {
+        streamMap[data.serial] = [];
+        streamMap[data.serial].push(__assign({}, data));
+    }
+    else {
+        streamMap[data.serial].push(__assign({}, data));
+    }
+    // Only keep the last 100 responses
+    if (streamMap[data.serial].length > 100) {
+        streamMap[data.serial].pop();
+    }
+    server_1.store.put('streamMap', streamMap);
     server_1.store.put('valueMap', valueMap);
     events_1.EventBusUdp.emit('value', valueMap);
 }

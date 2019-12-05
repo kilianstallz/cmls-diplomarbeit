@@ -47,9 +47,7 @@ class App {
 
     private initStore(): void {
         this.store = new LocalStorage('../deviceConfig')
-        const deviceConfig = [
-            {address: 'localhost', port: 7090},
-        ]
+        const deviceConfig = this.store.get('deviceConfig')
         this.store.put('deviceConfig', deviceConfig)
     }
 

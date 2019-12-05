@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3000
 /**
  * Initialize UDP Socket
  */
-export const udpSocket = new UDPSocket(7090, store, true)
+export const udpSocket = new UDPSocket(7090, store, false)
 // const udp = udpSocket.socket
 
 let lastEmit = null

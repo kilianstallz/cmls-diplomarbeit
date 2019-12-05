@@ -25,7 +25,7 @@ var PORT = process.env.PORT || 3000;
 /**
  * Initialize UDP Socket
  */
-exports.udpSocket = new socket_1.UDPSocket(7090, store, true);
+exports.udpSocket = new socket_1.UDPSocket(7090, store, false);
 // const udp = udpSocket.socket
 var lastEmit = null;
 wss.on('connection', function (ws) {

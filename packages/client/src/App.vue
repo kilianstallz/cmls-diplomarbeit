@@ -1,53 +1,10 @@
 <script>
-import Highchart from 'highcharts'
-const conn = new WebSocket('ws://localhost:3001/ws')
-const chart = []
-export default {
-  methods: {
-    renderChart () {
-      const data = chart.map(v => (v['18871884'].P))
-      Highchart.chart('chart', {
-        chart: {
-          type: 'line'
-        },
-        title: {
-          text: 'Test Charger'
-        },
-        xAxis: {
-          categories: ['time']
-        },
-        yAxis: {
-          title: {
-            text: 'Charger'
-          }
-        },
-        series: [{
-          name: 'C1',
-          data: data
-        }]
-      })
-    }
-  },
-  mounted () {
-    let i = 0
-    conn.addEventListener('message', msg => {
-      if (msg.data.startsWith('{') && (i % 2 === 0)) {
-        const data = JSON.parse(msg.data)
-        chart.push(data)
-        if (chart.length > 50) {
-          chart.pop()
-        }
-        this.renderChart()
-      }
-      i++
-    })
-  }
-}
+export default {}
 </script>
 
 <template>
   <div id="app">
-    <div id="chart" style="width: 100%; height: 500px;"></div>
+    <router-view></router-view>
   </div>
 </template>
 
