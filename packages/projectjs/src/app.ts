@@ -40,9 +40,20 @@ class App {
     }
 
     private initMQTT(): void {
-        this.mqtt = MQTT.connect()
+        this.mqtt = MQTT.connect('mqtt://docker.htl-wels.at', {
+            port: 1883,
+            username: 'energieHTL',
+            password: 'niceWeather',
+            protocol: 'mqtt'
+        })
+        this.mqtt.on('message', (topic, msg) => {
+            console.log(topic, msg)
+        })
+        this.mqtt.subscribe('energie/presence', () => {
+            this.mqtt.publish('energie/presence', 'TEST')
+            this.mqtt.unsubscribe('energie/presence')
+        })
         mqttHandler(this.mqtt)
-        console.log(this.mqtt.options)
     }
 
     private initStore(): void {

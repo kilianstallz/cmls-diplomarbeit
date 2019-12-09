@@ -40,9 +40,21 @@ var App = /** @class */ (function () {
         this.app.use(bodyParser.urlencoded({ extended: false }));
     };
     App.prototype.initMQTT = function () {
-        this.mqtt = mqtt_1.default.connect();
+        var _this = this;
+        this.mqtt = mqtt_1.default.connect('mqtt://docker.htl-wels.at', {
+            port: 1883,
+            username: 'energieHTL',
+            password: 'niceWeather',
+            protocol: 'mqtt'
+        });
+        this.mqtt.on('message', function (topic, msg) {
+            console.log(topic, msg);
+        });
+        this.mqtt.subscribe('energie/presence', function () {
+            _this.mqtt.publish('energie/presence', 'TEST');
+            _this.mqtt.unsubscribe('energie/presence');
+        });
         mqtt_handler_1.mqttHandler(this.mqtt);
-        console.log(this.mqtt.options);
     };
     App.prototype.initStore = function () {
         this.store = new node_storage_1.default('../deviceConfig');
