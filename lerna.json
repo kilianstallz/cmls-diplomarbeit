@@ -1,6 +1,8 @@
 {
   "packages": [
-    "packages/*"
+    "packages/docs",
+    "packages/client",
+    "packages/projectjs",
   ],
   "version": "0.0.0"
 }

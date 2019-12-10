@@ -1,11 +1,12 @@
-import { store, mqtt } from '../../server'
-import { EventBusUdp } from '../../pubsub/events'
+import Store from 'node-storage'
+
+export const UDPStore = new Store('../../../udp.store.log')
 
 export function writeMap(data: any) {
   // Get the value Map
-  let valueMap = store.get('valueMap') || {}
+  let valueMap = UDPStore.get('valueMap') || {}
   // Get the stream map
-  let streamMap = store.get('streamMap') || {}
+  let streamMap = UDPStore.get('streamMap') || {}
   // Update the data of the current Wallbox with new data
   valueMap[data.serial] = { ...valueMap[data.serial], ...data, time: Date.now() }
   // Check is streammap is empty
@@ -20,9 +21,8 @@ export function writeMap(data: any) {
   if(streamMap[data.serial].length > 100) {
     streamMap[data.serial].pop()
   }
-  store.put('streamMap', streamMap)
-  store.put('valueMap', valueMap)
-  EventBusUdp.emit('value', valueMap)
+  UDPStore.put('streamMap', streamMap)
+  UDPStore.put('valueMap', valueMap)
 }
 
 /**

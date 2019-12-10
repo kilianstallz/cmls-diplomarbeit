@@ -1,7 +1,11 @@
 import { Router } from "express";
 
-const routes = Router()
+const router = Router()
 
 // routes.use('/auth', auth)
 
-export default routes
+router.get('/ping', (req, res) => {
+  res.send('pong')
+})
+
+export default router
