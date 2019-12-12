@@ -1,7 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var express_1 = require("express");
-var routes = express_1.Router();
+const express_1 = require("express");
+const router = express_1.Router();
 // routes.use('/auth', auth)
-exports.default = routes;
+router.get('/ping', (req, res) => {
+    res.send('pong');
+});
+exports.default = router;
 //# sourceMappingURL=index.js.map

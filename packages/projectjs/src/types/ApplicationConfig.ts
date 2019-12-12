@@ -12,7 +12,8 @@ export interface ApplicationConfig {
   }
   mqtt?: {
     options?: IClientOptions,
-    brokerUrl: any
+    brokerUrl: any,
+    heartbeatIntervall: number
   },
   chargers: [{
     address: string,

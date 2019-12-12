@@ -21,7 +21,7 @@ import routes from './api/routes'
 /**
  * Expose App Class that starts the server an inizialises all components asynchronously
  */
-export class App extends EventEmitter {
+export default class App extends EventEmitter {
   public appConfig: ApplicationConfig
   public mqtt: MqttClient
   public udp: Socket
@@ -29,16 +29,7 @@ export class App extends EventEmitter {
   
   constructor () {
     super()
-    this.asyncInitializer().then(() => {
-      console.log('Startup complete')
-    }).catch(error => {
-      console.log('Error while starting the server', error)
-      process.exit()
-    })
-  }
-
-  private async asyncInitializer() {
-      this.loadRcFile()
+    this.loadRcFile()
       this.initializeExpress()
       this.initializeMQTT()
       this.initializeUDP()

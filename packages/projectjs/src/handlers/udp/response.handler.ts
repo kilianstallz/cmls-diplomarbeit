@@ -1,6 +1,7 @@
 import Store from 'node-storage'
+import { join } from 'path'
 
-export const UDPStore = new Store('../../../udp.store.log')
+export const UDPStore = new Store(join(__dirname, 'udp.store.json'))
 
 export function writeMap(data: any) {
   // Get the value Map

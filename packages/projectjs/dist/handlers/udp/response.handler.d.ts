@@ -1,3 +1,4 @@
+export declare const UDPStore: any;
 export declare function writeMap(data: any): void;
 /**
  * @param res Pass the parsed response Object from the udp observer

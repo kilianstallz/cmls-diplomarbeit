@@ -1,49 +1,81 @@
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var app_1 = __importDefault(require("./app"));
-var socket_1 = require("./drivers/udp/socket");
-var events_1 = require("./pubsub/events");
-var _a = new app_1.default(), app = _a.app, mqtt = _a.mqtt, store = _a.store, wss = _a.wss;
-exports.app = app;
-exports.mqtt = mqtt;
-exports.store = store;
-var PORT = process.env.PORT || 3000;
 /**
- * Initialize UDP Socket
+ * Server
+ * Hier werden alle Dienste, Handler und Driver initialisiert und gestartet.
+ * Konfiguration der Express App.
+ *
+
+/**
+ * Import App Modules
  */
-exports.udpSocket = new socket_1.UDPSocket(7090, store, false);
-// const udp = udpSocket.socket
-var lastEmit = null;
-wss.on('connection', function (ws) {
-    console.log('connected');
-    ws.send('Connected');
-});
-events_1.EventBusUdp.on('value', function (event) {
-    lastEmit = event;
-    // Publish one topic for each device serial
-    mqtt.publish('energie/lader', JSON.stringify(event));
-    Object.keys(event).forEach(function (k) {
-        mqtt.publish("energie/lader/" + k, JSON.stringify(event[k]));
-    });
-    wss.clients.forEach(function (client) {
-        client.send(JSON.stringify(__assign(__assign({}, lastEmit), { time: Date.now() })));
-    });
-});
-app.listen(PORT, function () {
-    console.log('Express server listening on port', PORT);
-});
+const express_1 = __importDefault(require("express"));
+const rc_config_loader_1 = require("rc-config-loader");
+const default_1 = require("./config/default");
+const events_1 = require("events");
+const mqtt_1 = require("mqtt");
+const dgram_1 = require("dgram");
+const mqtt_2 = require("./handlers/mqtt");
+const socket_1 = require("./drivers/udp/socket");
+const routes_1 = __importDefault(require("./api/routes"));
+/**
+ * Expose App Class that starts the server an inizialises all components asynchronously
+ */
+class App extends events_1.EventEmitter {
+    constructor() {
+        super();
+        this.loadRcFile();
+        this.initializeExpress();
+        this.initializeMQTT();
+        this.initializeUDP();
+    }
+    /**
+     * Load Config File
+     */
+    loadRcFile() {
+        try {
+            const results = rc_config_loader_1.rcFile('charge', {
+                defaultExtension: '.js',
+            });
+            if (!results) {
+                return this.appConfig = default_1.defaultConfig;
+            }
+            return this.appConfig = results.config;
+        }
+        catch (error) {
+            this.appConfig = default_1.defaultConfig;
+        }
+    }
+    /**
+     * Initialize MQTT and Handler
+     */
+    initializeMQTT() {
+        this.mqtt = mqtt_1.connect(this.appConfig.mqtt.brokerUrl, this.appConfig.mqtt.options);
+        console.log(`MQTT connected on ${this.mqtt.options.host}:${this.mqtt.options.port}`);
+        // Mount mqtt handler
+        mqtt_2.mqttHandler(this.mqtt);
+    }
+    /**
+     * Initialize UDP Socket and Handler
+     */
+    initializeUDP() {
+        this.udp = dgram_1.createSocket('udp4');
+        this.udp.bind(this.appConfig.udp.port, () => {
+            console.log('UDP Socket bound to ' + this.appConfig.udp.port);
+        });
+        socket_1.mountPollObervers(this.udp);
+    }
+    /**
+     * Initialize Express REST API
+     */
+    initializeExpress() {
+        this.api = express_1.default();
+        // TODO: Server Config
+        this.api.use(routes_1.default);
+    }
+}
+exports.default = App;
 //# sourceMappingURL=server.js.map

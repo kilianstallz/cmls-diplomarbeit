@@ -1,41 +1,32 @@
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var server_1 = require("../../server");
-var events_1 = require("../../pubsub/events");
+const node_storage_1 = __importDefault(require("node-storage"));
+exports.UDPStore = new node_storage_1.default('../../../udp.store.log');
 function writeMap(data) {
     // Get the value Map
-    var valueMap = server_1.store.get('valueMap') || {};
+    let valueMap = exports.UDPStore.get('valueMap') || {};
     // Get the stream map
-    var streamMap = server_1.store.get('streamMap') || {};
+    let streamMap = exports.UDPStore.get('streamMap') || {};
     // Update the data of the current Wallbox with new data
-    valueMap[data.serial] = __assign(__assign(__assign({}, valueMap[data.serial]), data), { time: Date.now() });
+    valueMap[data.serial] = { ...valueMap[data.serial], ...data, time: Date.now() };
     // Check is streammap is empty
     // then push the current data to the stream array
     if (!streamMap[data.serial]) {
         streamMap[data.serial] = [];
-        streamMap[data.serial].push(__assign({}, data));
+        streamMap[data.serial].push({ ...data });
     }
     else {
-        streamMap[data.serial].push(__assign({}, data));
+        streamMap[data.serial].push({ ...data });
     }
     // Only keep the last 100 responses
     if (streamMap[data.serial].length > 100) {
         streamMap[data.serial].pop();
     }
-    server_1.store.put('streamMap', streamMap);
-    server_1.store.put('valueMap', valueMap);
-    events_1.EventBusUdp.emit('value', valueMap);
+    exports.UDPStore.put('streamMap', streamMap);
+    exports.UDPStore.put('valueMap', valueMap);
 }
 exports.writeMap = writeMap;
 /**
@@ -45,7 +36,7 @@ exports.writeMap = writeMap;
 function udpResponseHandler(res) {
     switch (res.ID) {
         case '2':
-            var State = res.State, Error1 = res.Error1, Error2 = res.Error2, Plug = res.Plug, Setenergy = res.Setenergy, Output = res.Output, Input = res.Input;
+            const { State, Error1, Error2, Plug, Setenergy, Output, Input } = res;
             writeMap({
                 serial: res['Serial'],
                 state: State,
@@ -66,17 +57,17 @@ function udpResponseHandler(res) {
             });
             break;
         case '3':
-            var U1 = res.U1, U2 = res.U2, U3 = res.U3, I1 = res.I1, I2 = res.I2, I3 = res.I3, P = res.P, PF = res.PF;
+            const { U1, U2, U3, I1, I2, I3, P, PF } = res;
             writeMap({
                 serial: res['Serial'],
-                U1: U1,
-                U2: U2,
-                U3: U3,
-                I1: I1,
-                I2: I2,
-                I3: I3,
-                P: P,
-                PF: PF,
+                U1,
+                U2,
+                U3,
+                I1,
+                I2,
+                I3,
+                P,
+                PF,
                 ePres: res['E pres'],
                 etotal: res['E total'],
             });

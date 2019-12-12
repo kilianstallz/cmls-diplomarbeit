@@ -5,6 +5,14 @@ import { concatMap } from 'rxjs/operators'
 
 import {appConfig} from '../../app'
 
+export const udpMessage$ = (socket: Socket) => {
+  return Observable.create(observer => {
+    socket.on('message', (msg, rinfo) => {
+      observer.next({ msg: msg.toString(), rinfo })
+    })
+  })
+}
+
 export const mountPollObervers = (socket: Socket) => {
   socket.on('listening', () => {
     timer(0, appConfig.udp.pollIntervall)
@@ -15,13 +23,7 @@ export const mountPollObervers = (socket: Socket) => {
       })
   })
 
-  const udpMessage$ = Observable.create(observer => {
-    socket.on('message', (msg, rinfo) => {
-      observer.next({ msg: msg.toString(), rinfo })
-    })
-  })
-
-  udpMessage$.subscribe({
+  udpMessage$(socket).subscribe({
     next: ({msg, rinfo}) => {
       console.log(`UDP: ${rinfo.address}:${rinfo.port} - size:${rinfo.size}`)
       udpHandler(msg)

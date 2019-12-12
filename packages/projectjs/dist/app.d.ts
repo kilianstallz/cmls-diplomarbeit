@@ -1,19 +1,7 @@
+/**
+ * Application entry file
+ */
 /// <reference types="node" />
-import { Application } from 'express';
-import MQTT from 'mqtt';
-import * as dgram from 'dgram';
-import * as WebSocket from 'ws';
-declare class App {
-    app: Application;
-    wss: WebSocket.Server;
-    mqtt: MQTT.MqttClient;
-    udp: dgram.Socket;
-    store: any;
-    constructor();
-    private config;
-    private initMQTT;
-    private initStore;
-    addDevice(): void;
-    private routes;
-}
-export default App;
+/// <reference types="express" />
+declare const udp: import("dgram").Socket, api: import("express").Application, appConfig: import("./types/ApplicationConfig").ApplicationConfig, mqtt: import("mqtt").Client;
+export { udp, api, appConfig, mqtt };

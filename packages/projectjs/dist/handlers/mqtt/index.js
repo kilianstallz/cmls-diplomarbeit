@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var mqttHandler = function (mqtt) {
+const mqttHandler = (client) => {
+    return;
 };
 exports.mqttHandler = mqttHandler;
-//# sourceMappingURL=mqtt.handler.js.map
+//# sourceMappingURL=index.js.map

@@ -1,8 +1,41 @@
-/// <reference types="express" />
-import { UDPSocket } from './drivers/udp/socket';
-declare const app: import("express").Application, mqtt: import("mqtt").Client, store: any;
+/// <reference types="node" />
 /**
- * Initialize UDP Socket
+ * Server
+ * Hier werden alle Dienste, Handler und Driver initialisiert und gestartet.
+ * Konfiguration der Express App.
+ *
+
+/**
+ * Import App Modules
  */
-export declare const udpSocket: UDPSocket;
-export { app, mqtt, store };
+import { Application } from 'express';
+import { ApplicationConfig } from './types/ApplicationConfig';
+import { EventEmitter } from 'events';
+import { MqttClient } from 'mqtt';
+import { Socket } from 'dgram';
+/**
+ * Expose App Class that starts the server an inizialises all components asynchronously
+ */
+export default class App extends EventEmitter {
+    appConfig: ApplicationConfig;
+    mqtt: MqttClient;
+    udp: Socket;
+    api: Application;
+    constructor();
+    /**
+     * Load Config File
+     */
+    private loadRcFile;
+    /**
+     * Initialize MQTT and Handler
+     */
+    private initializeMQTT;
+    /**
+     * Initialize UDP Socket and Handler
+     */
+    private initializeUDP;
+    /**
+     * Initialize Express REST API
+     */
+    private initializeExpress;
+}
