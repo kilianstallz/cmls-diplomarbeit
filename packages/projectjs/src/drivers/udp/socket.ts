@@ -3,7 +3,32 @@ import { udpResponseHandler } from '../../handlers/udp/response.handler'
 import { timer, from, Observable } from 'rxjs'
 import { concatMap } from 'rxjs/operators'
 
-import {appConfig} from '../../app'
+import { appConfig } from '../../app'
+
+function udpHandler(msg: Buffer) {
+  const conv = msg.toString()
+  if (conv.startsWith('{')) {
+    const parsed = JSON.parse(conv)
+    udpResponseHandler(parsed)
+  } else {
+    return conv
+  }
+}
+
+function sendUDP(socket, msg: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    console.log(appConfig)
+    appConfig.chargers.forEach(dev => {
+      socket.send(msg, dev.port, dev.address, (err, bytes) => {
+        if (err) {
+          console.error('Error Sending:', err)
+          reject(err)
+        }
+      })
+      resolve()
+    })
+  })
+}
 
 export const udpMessage$ = (socket: Socket) => {
   return Observable.create(observer => {
@@ -24,33 +49,9 @@ export const mountPollObervers = (socket: Socket) => {
   })
 
   udpMessage$(socket).subscribe({
-    next: ({msg, rinfo}) => {
+    next: ({ msg, rinfo }) => {
       console.log(`UDP: ${rinfo.address}:${rinfo.port} - size:${rinfo.size}`)
       udpHandler(msg)
     },
-  })
-}
-
-function udpHandler(msg: Buffer) {
-  const conv = msg.toString()
-  if (conv.startsWith('{')) {
-    const parsed = JSON.parse(conv)
-    udpResponseHandler(parsed)
-  } else {
-    return conv
-  }
-}
-
-function sendUDP(socket, msg: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-      appConfig.chargers.forEach(dev => {
-          socket.send(msg, dev.port, dev.address, (err, bytes) => {
-              if (err) {
-                  console.error('Error Sending:', err)
-                  reject(err)
-              }
-          })
-          resolve()
-      })
   })
 }

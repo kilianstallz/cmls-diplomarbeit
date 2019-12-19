@@ -20,6 +20,7 @@ export const sendHeartbeat = (serial?: string) => {
   // Get value map
   const valueMap = UDPStore.get('valueMap')
   
+  mqtt.publish(`/energie/wallboxStatus`, JSON.stringify(valueMap))
   if (serial) {
     if (Object.keys(valueMap).includes(serial)) {
       const send = {

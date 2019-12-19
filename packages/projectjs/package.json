@@ -17,11 +17,13 @@
     "express-ws": "^4.0.0",
     "helmet": "^3.21.2",
     "ioredis": "^4.14.1",
+    "jsmodbus": "^4.0.0",
     "mqtt": "^3.0.0",
     "node-storage": "0.0.9",
     "pug": "^2.0.4",
     "rc-config-loader": "^3.0.0",
     "rxjs": "^6.5.3",
+    "serialport": "^8.0.5",
     "socket.io": "^2.3.0",
     "ts-node": "^8.5.3"
   },

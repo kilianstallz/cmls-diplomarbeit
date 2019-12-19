@@ -17,6 +17,7 @@ import { Socket, createSocket } from 'dgram'
 import { mqttHandler } from './handlers/mqtt'
 import { mountPollObervers } from './drivers/udp/socket'
 import routes from './api/routes'
+import { connectModbus } from './drivers/modbus'
 
 /**
  * Expose App Class that starts the server an inizialises all components asynchronously
@@ -26,13 +27,14 @@ export default class App extends EventEmitter {
   public mqtt: MqttClient
   public udp: Socket
   public api: Application
-  
-  constructor () {
+
+  constructor() {
     super()
     this.loadRcFile()
-      this.initializeExpress()
-      this.initializeMQTT()
-      this.initializeUDP()
+    this.initializeExpress()
+    this.initializeMQTT()
+    this.initializeUDP()
+    this.initializeModbus()
   }
 
   /**
@@ -43,10 +45,10 @@ export default class App extends EventEmitter {
       const results = rcFile('charge', {
         defaultExtension: '.js',
       })
-      if(!results) {
-        return this.appConfig = defaultConfig
+      if (!results) {
+        return (this.appConfig = defaultConfig)
       }
-      return this.appConfig = results.config as ApplicationConfig
+      return (this.appConfig = results.config as ApplicationConfig)
     } catch (error) {
       this.appConfig = defaultConfig
     }
@@ -56,10 +58,10 @@ export default class App extends EventEmitter {
    * Initialize MQTT and Handler
    */
   private initializeMQTT() {
-      this.mqtt = connect(this.appConfig.mqtt.brokerUrl, this.appConfig.mqtt.options)
-      console.log(`MQTT connected on ${this.mqtt.options.host}:${this.mqtt.options.port}`)
-      // Mount mqtt handler
-      mqttHandler(this.mqtt)
+    this.mqtt = connect(this.appConfig.mqtt.brokerUrl, this.appConfig.mqtt.options)
+    console.log(`MQTT connected on ${this.mqtt.options.host}:${this.mqtt.options.port}`)
+    // Mount mqtt handler
+    mqttHandler(this.mqtt)
   }
 
   /**
@@ -80,6 +82,10 @@ export default class App extends EventEmitter {
     this.api = express()
     // TODO: Server Config
     this.api.use(routes)
+  }
+
+  private initializeModbus() {
+    connectModbus()
   }
 
   // TODO: WSS
