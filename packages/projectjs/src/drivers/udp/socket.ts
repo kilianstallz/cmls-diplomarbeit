@@ -2,6 +2,7 @@ import { Socket } from 'dgram'
 import { udpResponseHandler } from '../../handlers/udp/response.handler'
 import { timer, from, Observable } from 'rxjs'
 import { concatMap } from 'rxjs/operators'
+import chalk from 'chalk'
 
 import { appConfig } from '../../app'
 
@@ -17,7 +18,6 @@ function udpHandler(msg: Buffer) {
 
 function sendUDP(socket, msg: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    console.log(appConfig)
     appConfig.chargers.forEach(dev => {
       socket.send(msg, dev.port, dev.address, (err, bytes) => {
         if (err) {
@@ -44,13 +44,13 @@ export const mountPollObervers = (socket: Socket) => {
       .pipe(concatMap(() => from(sendUDP(socket, 'report 2')))) // add more req to pipe with . stacking
       .pipe(concatMap(() => from(sendUDP(socket, 'report 3')))) // add more req to pipe with . stacking
       .subscribe({
-        error: err => console.log(err),
+        error: err => console.log(chalk.red(err)),
       })
   })
 
   udpMessage$(socket).subscribe({
     next: ({ msg, rinfo }) => {
-      console.log(`UDP: ${rinfo.address}:${rinfo.port} - size:${rinfo.size}`)
+      console.log(chalk.yellow(`UDP: ${rinfo.address}:${rinfo.port} - size:${rinfo.size}`))
       udpHandler(msg)
     },
   })

@@ -18,6 +18,7 @@ import { mqttHandler } from './handlers/mqtt'
 import { mountPollObervers } from './drivers/udp/socket'
 import routes from './api/routes'
 import { connectModbus } from './drivers/modbus'
+import chalk from 'chalk'
 
 /**
  * Expose App Class that starts the server an inizialises all components asynchronously
@@ -59,7 +60,7 @@ export default class App extends EventEmitter {
    */
   private initializeMQTT() {
     this.mqtt = connect(this.appConfig.mqtt.brokerUrl, this.appConfig.mqtt.options)
-    console.log(`MQTT connected on ${this.mqtt.options.host}:${this.mqtt.options.port}`)
+    console.log(chalk.green(`MQTT connected on ${this.mqtt.options.host}:${this.mqtt.options.port}`))
     // Mount mqtt handler
     mqttHandler(this.mqtt)
   }
@@ -70,7 +71,7 @@ export default class App extends EventEmitter {
   private initializeUDP() {
     this.udp = createSocket('udp4')
     this.udp.bind(this.appConfig.udp.port, () => {
-      console.log('UDP Socket bound to ' + this.appConfig.udp.port)
+      console.log(chalk.green('UDP Socket bound to ' + this.appConfig.udp.port))
     })
     mountPollObervers(this.udp)
   }
