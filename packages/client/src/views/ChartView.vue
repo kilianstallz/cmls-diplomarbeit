@@ -1,6 +1,6 @@
 <script>
 import Highchart from 'highcharts'
-const conn = new WebSocket('ws://localhost:3001/ws')
+import MQTT from 'mqtt'
 let chart = []
 export default {
   name: 'chartView',
@@ -61,19 +61,14 @@ export default {
     }
   },
   mounted () {
-    let i = 0
-    conn.addEventListener('message', msg => {
-      if (msg.data.startsWith('{') && (i % 2 === 0)) {
-        const data = JSON.parse(msg.data)
-        this.devices = Object.keys(data)
-        this.currentState = data[this.$route.params.device].state
-        chart.push(data)
-        if (chart.length > 50) {
-          chart.pop()
-        }
-        this.renderChart()
-      }
-      i++
+    const mqttClient = MQTT.connect('mqtt://docker.htl-wels.at', {
+      port: 1883,
+      username: 'energieHTL',
+      password: 'NiceWeather'
+    })
+    mqttClient.subscribe('/energie/wallboxStatus')
+    mqttClient.on('message', (topic, payload) => {
+      console.log(topic, payload.toString())
     })
   }
 }
