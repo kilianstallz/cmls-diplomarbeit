@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "nodemon",
-    "test": "jest --coverage"
+    "test": "jest --coverage --detectOpenHandles --colors"
   },
   "dependencies": {
     "@types/cors": "^2.8.6",
@@ -17,11 +17,13 @@
     "express-ws": "^4.0.0",
     "helmet": "^3.21.2",
     "ioredis": "^4.14.1",
+    "jest-junit": "^10.0.0",
     "jsmodbus": "^4.0.0",
     "mqtt": "^3.0.0",
     "node-storage": "0.0.9",
     "pug": "^2.0.4",
     "rc-config-loader": "^3.0.0",
+    "reflect-metadata": "^0.1.13",
     "rxjs": "^6.5.3",
     "serialport": "^8.0.5",
     "socket.io": "^2.3.0",
@@ -43,6 +45,7 @@
     "prettier": "^1.19.1",
     "ts-jest": "^24.2.0",
     "typescript": "^3.7.3",
+    "winston": "^3.2.1",
     "ws": "^7.2.0"
   }
 }

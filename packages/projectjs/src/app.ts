@@ -3,17 +3,25 @@
  */
 
 import App from './server'
-import { heartbeat } from './handlers/mqtt/heartbeat'
+import { mountMqttPublisher } from './publisher/mqtt'
+import { startPoller } from './drivers/udp'
+import { openUDPSteams } from './streams/udp'
+import { connectModbus } from './drivers/modbus'
 
 const app = new App()
 
 const { udp, api, appConfig, mqtt } = app
 
-heartbeat()
+/**
+ * Start UDP
+ */
+startPoller(appConfig)
+openUDPSteams()
 
-export {
-    udp,
-    api,
-    appConfig,
-    mqtt
-}
+connectModbus()
+/**
+ * Start MQTT
+ */
+mountMqttPublisher(mqtt, 10000)
+
+export { udp, api, appConfig, mqtt }

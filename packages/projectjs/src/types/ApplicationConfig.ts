@@ -1,5 +1,5 @@
-import { ServerOptions } from "ws";
-import { IClientOptions } from "mqtt";
+import { ServerOptions } from 'ws'
+import { IClientOptions } from 'mqtt'
 
 export interface ApplicationConfig {
   websocket?: {
@@ -7,16 +7,18 @@ export interface ApplicationConfig {
   }
   udp: {
     address?: string
-    port: number,
+    port: number
     pollIntervall: number
   }
   mqtt?: {
-    options?: IClientOptions,
-    brokerUrl: any,
+    options?: IClientOptions
+    brokerUrl: string
     heartbeatIntervall: number
-  },
-  chargers: [{
-    address: string,
-    port: number
-  }]
+  }
+  chargers: [Charger]
+}
+
+export interface Charger {
+  address: string
+  port: number
 }

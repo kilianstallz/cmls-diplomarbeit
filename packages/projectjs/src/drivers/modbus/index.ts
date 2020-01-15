@@ -29,11 +29,8 @@ export function connectModbus(deviceIP?: string, devicePort?: number): void {
               console.log(chalk.blue('PV-Produktion: 0W'))
               prodNow = 0
             }
-            const msg = JSON.stringify({productionNow: prodNow, time: Date.now()})
-            mqtt.publish(
-              'energie/solar/now',
-              msg
-            )
+            const msg = JSON.stringify({ productionNow: prodNow, time: Date.now() })
+            mqtt.publish('energie/solar/now', msg)
           })
           .catch(err => {
             console.log(chalk.red(err))
@@ -42,20 +39,14 @@ export function connectModbus(deviceIP?: string, devicePort?: number): void {
           const productionWatt = res.response.body.valuesAsBuffer.readBigUInt64BE(0).toString()
           prodDay = parseInt(productionWatt)
           console.log(chalk.blue(`Produktion Heute: ${prodDay}Wh`))
-          
-          const msg = JSON.stringify({productionToday: prodDay, time: Date.now()})
-          mqtt.publish(
-            'energie/solar/today',
-            msg
-          )
+
+          const msg = JSON.stringify({ productionToday: prodDay, time: Date.now() })
+          mqtt.publish('energie/solar/today', msg)
         })
         // TODO: store values local in lowdb
         // TODO: Convert to rxjs
-        const message = JSON.stringify({productionToday: prodDay, productionNow: prodNow, time: Date.now()})
-          mqtt.publish(
-            'energie/solar',
-            message
-          )
+        const message = JSON.stringify({ productionToday: prodDay, productionNow: prodNow, time: Date.now() })
+        mqtt.publish('energie/solar', message)
       }, 5000)
     },
   )

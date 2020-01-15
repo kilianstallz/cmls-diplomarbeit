@@ -1,11 +1,8 @@
-import { ApplicationConfig } from "../types/ApplicationConfig";
+import { ApplicationConfig, Charger } from '../types/ApplicationConfig'
 
 export const defaultConfig = {
-  mqtt: {
-    brokerUrl: 'mqtt://docker.htl-wels.at',
-  },
   udp: {
-    address: 'localhost',
-    port: 7090
-  }
+    port: 7090,
+    pollIntervall: 12000,
+  },
 } as ApplicationConfig

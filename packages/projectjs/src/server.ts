@@ -14,8 +14,6 @@ import { defaultConfig } from './config/default'
 import { EventEmitter } from 'events'
 import { MqttClient, connect } from 'mqtt'
 import { Socket, createSocket } from 'dgram'
-import { mqttHandler } from './handlers/mqtt'
-import { mountPollObervers } from './drivers/udp/socket'
 import routes from './api/routes'
 import { connectModbus } from './drivers/modbus'
 import chalk from 'chalk'
@@ -35,59 +33,52 @@ export default class App extends EventEmitter {
     this.initializeExpress()
     this.initializeMQTT()
     this.initializeUDP()
-    this.initializeModbus()
   }
 
   /**
    * Load Config File
    */
-  private loadRcFile() {
+  private loadRcFile(): void {
     try {
       const results = rcFile('charge', {
         defaultExtension: '.js',
       })
       if (!results) {
-        return (this.appConfig = defaultConfig)
+        this.appConfig = defaultConfig
       }
-      return (this.appConfig = results.config as ApplicationConfig)
+      this.appConfig = results.config as ApplicationConfig
     } catch (error) {
-      this.appConfig = defaultConfig
+      throw new Error('Fehler beim laden der Konfigurationsdatei')
     }
-  }
-
-  /**
-   * Initialize MQTT and Handler
-   */
-  private initializeMQTT() {
-    this.mqtt = connect(this.appConfig.mqtt.brokerUrl, this.appConfig.mqtt.options)
-    console.log(chalk.green(`MQTT connected on ${this.mqtt.options.host}:${this.mqtt.options.port}`))
-    // Mount mqtt handler
-    mqttHandler(this.mqtt)
   }
 
   /**
    * Initialize UDP Socket and Handler
    */
-  private initializeUDP() {
+  private initializeUDP(): void {
     this.udp = createSocket('udp4')
     this.udp.bind(this.appConfig.udp.port, () => {
       console.log(chalk.green('UDP Socket bound to ' + this.appConfig.udp.port))
     })
-    mountPollObervers(this.udp)
+  }
+
+  /**
+   * Initialize MQTT and Handler
+   */
+  private initializeMQTT(): void {
+    this.mqtt = connect(this.appConfig.mqtt.brokerUrl, this.appConfig.mqtt.options)
+    console.log(chalk.green(`MQTT connected on ${this.mqtt.options.host}:${this.mqtt.options.port}`))
+    // Mount mqtt handler
+    // mqttHandler(this.mqtt)
   }
 
   /**
    * Initialize Express REST API
    */
-  private initializeExpress() {
+  private initializeExpress(): void {
     this.api = express()
     // TODO: Server Config
     this.api.use(routes)
   }
-
-  private initializeModbus() {
-    connectModbus()
-  }
-
   // TODO: WSS
 }
