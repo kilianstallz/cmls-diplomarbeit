@@ -23,6 +23,7 @@
     "node-storage": "0.0.9",
     "pug": "^2.0.4",
     "rc-config-loader": "^3.0.0",
+    "redux": "^4.0.5",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^6.5.3",
     "serialport": "^8.0.5",

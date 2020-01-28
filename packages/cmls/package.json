@@ -1,0 +1,37 @@
+{
+  "name": "cmls",
+  "version": "0.0.1",
+  "description": "Controll Monitoring and Logging System",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon",
+    "test": "jest --coverage --detectOpenHandles --colors"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^24.9.0",
+    "@types/node": "^13.1.8",
+    "@typescript-eslint/eslint-plugin": "^2.16.0",
+    "@typescript-eslint/parser": "^2.16.0",
+    "eslint": "^6.8.0",
+    "eslint-config-standard": "^14.1.0",
+    "jest": "^24.9.0",
+    "jest-junit": "^10.0.0",
+    "prettier": "^1.19.1",
+    "ts-jest": "^24.3.0",
+    "typescript": "^3.7.5",
+    "winston": "^3.2.1"
+  },
+  "dependencies": {
+    "chalk": "^3.0.0",
+    "jsmodbus": "^4.0.0",
+    "mqtt": "^3.0.0",
+    "rc-config-loader": "^3.0.0",
+    "redux": "^4.0.5",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^6.5.4",
+    "serialport": "^8.0.6",
+    "ts-node": "^8.6.2"
+  }
+}

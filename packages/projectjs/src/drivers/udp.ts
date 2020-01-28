@@ -27,12 +27,14 @@ export function sendUDPPoll(socket: Socket, messages: string[], targets: Charger
   return new Promise((resolve, reject) => {
     messages.forEach(message => {
       targets.forEach(target => {
-        socket.send(message, target.port, target.address, (error, bytes) => {
-          if (error) {
-            reject(error)
-          }
-          resolve()
-        })
+        setTimeout(() => {
+          socket.send(message, target.port, target.address, (error, bytes) => {
+            if (error) {
+              reject(error)
+            }
+            resolve()
+          })
+        }, 100)
       })
     })
   })
@@ -44,10 +46,13 @@ export async function doWallboxPoll(): Promise<void> {
   return sendUDPPoll(WallboxSocket, ['report 1', 'report 2', 'report 3'], chargers)
 }
 
-export const startPoller = (conf: ApplicationConfig): void => {
-  interval(conf.udp.pollIntervall)
-    .pipe(map(() => doWallboxPoll()))
-    .subscribe({
-      error: err => console.log(chalk.red(err)),
-    })
+export const startPoller = (conf: ApplicationConfig): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    interval(conf.udp.pollIntervall)
+      .pipe(map(() => doWallboxPoll()))
+      .subscribe({
+        error: err => console.log(chalk.red(err)),
+      })
+    resolve()
+  })
 }

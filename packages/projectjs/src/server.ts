@@ -14,7 +14,7 @@ import { defaultConfig } from './config/default'
 import { EventEmitter } from 'events'
 import { MqttClient, connect } from 'mqtt'
 import { Socket, createSocket } from 'dgram'
-import routes from './api/routes'
+// import routes from './api/routes'
 import { connectModbus } from './drivers/modbus'
 import chalk from 'chalk'
 
@@ -78,7 +78,7 @@ export default class App extends EventEmitter {
   private initializeExpress(): void {
     this.api = express()
     // TODO: Server Config
-    this.api.use(routes)
+    // this.api.use(routes)
   }
   // TODO: WSS
 }
