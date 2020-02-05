@@ -1,4 +1,5 @@
 import mqtt from 'mqtt'
+import { eventBus } from '../eventBus'
 
 const client = mqtt.connect('mqtt://docker.htl-wels.at', {
     port: 1883,

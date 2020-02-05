@@ -1,0 +1,52 @@
+# Event Bus
+
+Der größte Anteil an Datenfluss in der CMLS wird mit Events übertragen.
+Alle Events werden auf den `eventBus` emittet. Dieser ist ein einfacher Node.JS `EventEmitter`.
+
+## Liste aller Events
+
+### Wallboxen/UDP
+
+#### UDP
+
+----
+In der `app.ts` File, wird eine Subscription mit dem `udp socket observable` gestartet. Bei Nachricht mit Payload, wird das Event `UDP` emittet.
+
+`````json
+{
+    "type": "UDP_NEW_MESSAGE",
+    "rinfo": {
+        "address": "string",
+        "family": "IPv4 | IPv6",
+        "port": 1231,
+        "size": 1235124
+    },
+    "isData": true | false,
+    "message": "JSON message String"
+}
+`````
+
+#### wallboxFirstData
+
+----
+Wird emitted, wenn die CMLS das erste mal Daten vom UDP Socket erhält.
+
+`````json
+{
+    "type": "FIRST_UPDATE",
+    "serial": "WallboxSerial",
+    "map": "...DataMap with new data"
+}
+`````
+
+#### carPluggedIn
+
+----
+Wird emitted, wenn die CMLS eine `status` änderung registriert.
+Der Status ändert sich von `enum isIdle` zu `enum isWaiting`.
+
+`````json
+{
+    "serial": "WallboxSerial"
+}
+`````

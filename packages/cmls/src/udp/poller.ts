@@ -18,10 +18,10 @@ export function pollLoop(socket: Socket, intervall: number) {
               })
               return msg
             }),
-            delay(200)
+            delay(400)
           ))
         )),
-        delay(300)
+        delay(600)
       ))
     ).pipe(
       delay(intervall),

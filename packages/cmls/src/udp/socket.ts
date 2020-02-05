@@ -7,7 +7,6 @@ export function observableFromSocket<T>(
 ): Observable<T> {
   return Observable.create(observer => {
     socket.on('message', (message: Buffer, remoteInfo: RemoteInfo) => {
-      console.log(JSON.parse(message.toString()))
       observer.next(map(message, remoteInfo))
     })
     socket.on('error', err => {

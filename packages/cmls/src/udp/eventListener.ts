@@ -2,7 +2,7 @@ import { Wallbox, WallboxStatus } from "../types/WallboxState";
 import { UDP_NEW_MESSAGE } from "../types/eventTypes";
 import { eventBus } from "../eventBus";
 import mqtt from '../mqtt'
-import { WallboxStatusChangedDTO, WallboxFirstDataDTO, WallboxEnableDTO } from "../types/DTO";
+import { WallboxStatusChangedDTO, WallboxFirstDataDTO, WallboxEnableDTO, WallboxChargingDTO } from "../types/DTO";
 
 // other listeners
 import './wallboxErrors'
@@ -22,8 +22,10 @@ function calcState({state, plug}): WallboxStatus {
 function _transformUDPMessage(message: string): Wallbox {
     const parsed = JSON.parse(message)
     let data: Wallbox = {}
+    // console.log(parsed)
     if (parsed.ID === 1 || parsed.ID === '1') {
         data.serial = parsed.Serial
+        // console.log(parsed)
     }
     if (parsed.ID === 2 || parsed.ID === '2') {
         // Get wallbox status
@@ -51,7 +53,7 @@ function _transformUDPMessage(message: string): Wallbox {
         data.U3 = parsed.U3                
         data.P = parsed.P                
         data.PF = parsed.PF                
-        data.eSession = parsed["E pres"]                
+        data.eSession = parsed["E pres"]/10          
     }
     // Skip unparsed message
     return data
@@ -61,7 +63,8 @@ let dataMap = {}
 function _detectChangeAndEmit (prevMap, newMap, serial: string) {
     const _currentMap = prevMap[serial] as Wallbox
     const _newMap = newMap[serial] as Wallbox
-    if (!_currentMap) { // First Ever send update
+    // First Ever send update
+    if (!_currentMap) { 
         console.log(`${serial} - First Update`)
         const msg = {
             type: 'FIRST_UPDATE',
@@ -70,8 +73,23 @@ function _detectChangeAndEmit (prevMap, newMap, serial: string) {
         } as WallboxFirstDataDTO
         eventBus.emit('wallboxFirstData', msg)
         mqtt.publish('energie/wallbox/statusChange', JSON.stringify(msg))
-        // Status goes from idle to waiting -> someone has plugged in
-    } else if (_currentMap.status === WallboxStatus.isIdle && _newMap.status === WallboxStatus.isWaiting) {
+        return
+    }
+
+    // Send data when vehicle is charging
+    if (_newMap.status === WallboxStatus.isCharging) {
+        const msg = {
+            type: 'CHARGING',
+            user: null, // TODO: GET USER ID
+            serial: _newMap.serial,
+            eSession: _newMap.eSession,
+            currTime: new Date().toUTCString()
+        } as WallboxChargingDTO
+        mqtt.publish('energie/tanken/status', JSON.stringify(msg))
+    }
+    
+    // Status goes from idle to waiting -> someone has plugged in
+    if (_currentMap.status === WallboxStatus.isIdle && _newMap.status === WallboxStatus.isWaiting) {
         eventBus.emit('carPluggedIn', {
             serial: _newMap.serial
         })
@@ -80,10 +98,11 @@ function _detectChangeAndEmit (prevMap, newMap, serial: string) {
             type: 'CAR_PLUGGED_IN',
             serial,
             newStatus: _newMap.status,
-            oldStatus: _currentMap.status
+            oldStatus: _currentMap.status,
+            currTime: new Date().toUTCString()
         } as WallboxStatusChangedDTO
-        mqtt.publish('energie/wallbox/statusChange', JSON.stringify(msg))
-        // Wallbox wird aktiviert oder deaktiviert
+        mqtt.publish('energie/tanken/status', JSON.stringify(msg))
+    // Wallbox wird aktiviert oder deaktiviert
     } else if (_currentMap.isEnabled !== _newMap.isEnabled) {
         console.log(`${serial} - Wallbox enabled`)
         const msg: WallboxEnableDTO = {
@@ -105,11 +124,11 @@ export function mountUDPEventListener() {
                     const trans = _transformUDPMessage(data.message)
                     // console.log(trans.serial)
                     if (!trans.serial) {
-                        console.log('trans undef', trans)
+                        console.log('Undefined Transfer', trans)
                     } else {
                         dataMap[trans.serial] = Object.keys(dataMap).includes(trans.serial) ? {...dataMap[trans.serial], ...trans} : {...trans}
                         _detectChangeAndEmit(_prevMap, dataMap, trans.serial)
-                        console.log(dataMap)
+                        // console.log(dataMap)
                         eventBus.emit('wallboxDataChange', dataMap)
                     }
                     // react on state change

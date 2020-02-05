@@ -6,6 +6,15 @@ import { fromEvent } from 'rxjs'
 import { eventBus } from './eventBus'
 import { UDP_NEW_MESSAGE } from './types/eventTypes'
 import { mountUDPEventListener } from './udp/eventListener'
+import express from 'express'
+import {createServer} from 'http'
+import socketIO from 'socket.io'
+import { modbusPVPoller } from './modbus/poller'
+import './modbus/eventListeners'
+
+const server = express()
+const http = createServer(server)
+const io = socketIO(http)
 
 const socket = createSocket('udp4')
 socket.bind(7090)
@@ -20,17 +29,33 @@ const socketSub = socket$.subscribe({
     // Send Message event
     eventBus.emit('UDP', {
       type: UDP_NEW_MESSAGE,
-      isData: msg.startsWith('{'),
+      rinfo,
+      isData: msg.startsWith('{\n"ID"'),
       message: msg
     })
   },
 })
+// Poller
 pollLoop(socket, 3000)
+modbusPVPoller(5000)
 
 mountUDPEventListener()
 
 fromEvent(process, 'beforeExit').subscribe(() => {
   socketSub.unsubscribe()
+})
+
+
+// Socket IO für die Echtzeit Übertragung von Daten zu Client ohne MQTT
+io.on('connection', socket => {
+  console.log('Nutzer verbunden.')
+  socket.on('disconnect', () => {
+    console.log('Nutzer getrennt')
+  })
+})
+
+http.listen('3000', function () {
+  console.log(`HTTP Server listening on port 3000`)
 })
 
 export { socket, socket$ }
