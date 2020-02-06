@@ -6,8 +6,11 @@
         "declaration": true,
         "sourceMap": true,
         "noImplicitAny": false,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
         "moduleResolution": "node",
         "outDir": "dist",
+        "types": ["reflect-metadata"],
         "baseUrl": ".",
         "paths": {
             "*": [

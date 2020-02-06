@@ -1,5 +1,5 @@
 import { eventBus } from "../eventBus";
-import mqtt from "../mqtt";
+import {mqtt} from "../app";
 import {blue} from 'chalk'
 
 function calculateFullProd(val: number): number {

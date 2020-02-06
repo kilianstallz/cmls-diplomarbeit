@@ -1,7 +1,6 @@
 import { Socket, RemoteInfo } from 'dgram'
 import { Observable, of, from } from 'rxjs'
 import { map, delay, repeat, concatMap } from 'rxjs/operators'
-import { logger } from '../logger'
 /**
  * Poller
  */
@@ -13,7 +12,7 @@ export function pollLoop(socket: Socket, intervall: number) {
             map((msg: string) => {
               socket.send(Buffer.from(msg), 7090, recv, error => {
                 if(error) {
-                  logger.error('poller.udp.pollLoop.failed - ' + error.message)
+                  console.error('poller.udp.pollLoop.failed - ' + error.message)
                 }
               })
               return msg
@@ -32,7 +31,6 @@ export function pollLoop(socket: Socket, intervall: number) {
       error: e => {
           if (e) {
               console.log('Error', e)
-              logger.error('udp.poller.error', e)
           }
       }
     })

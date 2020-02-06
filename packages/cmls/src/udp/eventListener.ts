@@ -1,7 +1,7 @@
 import { Wallbox, WallboxStatus } from "../types/WallboxState";
 import { UDP_NEW_MESSAGE, WALLBOX_FIRST_DATA, WALLBOX_ENABLE_CHANGE, CAR_PLUGGED_IN, CAR_PLUGGED_OUT, CAR_PLUGGED_OUT_CHARGING, CAR_STARTED_CHARGING } from "../types/eventTypes";
 import { eventBus } from "../eventBus";
-import mqtt from '../mqtt'
+import { mqtt } from '../app'
 import { WallboxStatusChangedDTO, WallboxFirstDataDTO, WallboxEnableDTO, WallboxChargingDTO } from "../types/DTO";
 
 // other listeners
