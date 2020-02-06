@@ -27,7 +27,7 @@ const socket$ = observableFromSocket((buffer, remoteInfo) => ({
 const socketSub = socket$.subscribe({
   next: ({msg, rinfo}) => {
     // Send Message event
-    eventBus.emit('UDP', {
+    eventBus.emit(UDP_NEW_MESSAGE, {
       type: UDP_NEW_MESSAGE,
       rinfo,
       isData: msg.startsWith('{\n"ID"'),
@@ -41,8 +41,9 @@ modbusPVPoller(5000)
 
 mountUDPEventListener()
 
-fromEvent(process, 'beforeExit').subscribe(() => {
-  socketSub.unsubscribe()
+eventBus.on('sendUDP', (payload) => {
+  const {message, port, address} = payload
+  socket.send(message, port, address)
 })
 
 

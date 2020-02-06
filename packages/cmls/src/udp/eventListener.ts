@@ -1,5 +1,5 @@
 import { Wallbox, WallboxStatus } from "../types/WallboxState";
-import { UDP_NEW_MESSAGE } from "../types/eventTypes";
+import { UDP_NEW_MESSAGE, WALLBOX_FIRST_DATA, WALLBOX_ENABLE_CHANGE, CAR_PLUGGED_IN, CAR_PLUGGED_OUT, CAR_PLUGGED_OUT_CHARGING, CAR_STARTED_CHARGING } from "../types/eventTypes";
 import { eventBus } from "../eventBus";
 import mqtt from '../mqtt'
 import { WallboxStatusChangedDTO, WallboxFirstDataDTO, WallboxEnableDTO, WallboxChargingDTO } from "../types/DTO";
@@ -60,9 +60,17 @@ function _transformUDPMessage(message: string): Wallbox {
 }
 let dataMap = {}
 
+/**
+ * Main UDP Reducer detects changes in the map and emits values based on change
+ */
 function _detectChangeAndEmit (prevMap, newMap, serial: string) {
-    const _currentMap = prevMap[serial] as Wallbox
-    const _newMap = newMap[serial] as Wallbox
+    const _currentMap = <Wallbox>prevMap[serial]
+    const _newMap = <Wallbox>newMap[serial]
+    
+    /**
+     * EVENTS
+     */
+
     // First Ever send update
     if (!_currentMap) { 
         console.log(`${serial} - First Update`)
@@ -71,68 +79,123 @@ function _detectChangeAndEmit (prevMap, newMap, serial: string) {
             serial,
             map: _newMap
         } as WallboxFirstDataDTO
-        eventBus.emit('wallboxFirstData', msg)
-        mqtt.publish('energie/wallbox/statusChange', JSON.stringify(msg))
+        eventBus.emit(WALLBOX_FIRST_DATA, msg)
+        mqtt.publish('energie/tanken/events', JSON.stringify(msg))
         return
     }
 
-    // Send data when vehicle is charging
-    if (_newMap.status === WallboxStatus.isCharging) {
-        const msg = {
-            type: 'CHARGING',
-            user: null, // TODO: GET USER ID
-            serial: _newMap.serial,
-            eSession: _newMap.eSession,
-            currTime: new Date().toUTCString()
-        } as WallboxChargingDTO
-        mqtt.publish('energie/tanken/status', JSON.stringify(msg))
+    // Wallbox Enabled/Disabled
+    if (_currentMap.isEnabled !== _newMap.isEnabled) {
+        console.log(`${serial} - Wallbox ${_newMap.isEnabled ? 'enabled' : 'disabled'}`)
+        const msg: WallboxEnableDTO = {
+            type: 'WALLBOX_ACTIVE',
+            isEnabled: _newMap.isEnabled,
+            serial,
+            currTime: new Date().toUTCString()    
+        }
+        eventBus.emit(WALLBOX_ENABLE_CHANGE, msg)
+        mqtt.publish('energie/tanken/events', JSON.stringify(msg))
     }
-    
+
     // Status goes from idle to waiting -> someone has plugged in
     if (_currentMap.status === WallboxStatus.isIdle && _newMap.status === WallboxStatus.isWaiting) {
-        eventBus.emit('carPluggedIn', {
+        eventBus.emit(CAR_PLUGGED_IN, {
             serial: _newMap.serial
         })
         console.log(`${serial} - User Plugged in`)
         const msg = {
-            type: 'CAR_PLUGGED_IN',
+            type: CAR_PLUGGED_IN,
+            serial,
+            newStatus: _newMap.status,
+            oldStatus: _currentMap.status,
+            currTime: new Date().toUTCString()
+        } as WallboxStatusChangedDTO
+        mqtt.publish('energie/tanken/events', JSON.stringify(msg))
+    }
+    // From waiting to idle -> someone plugged car out after charging or before charging has begun
+    if (_currentMap.status === WallboxStatus.isWaiting && _newMap.status === WallboxStatus.isIdle) {
+        eventBus.emit(CAR_PLUGGED_OUT, {
+            serial: _newMap.serial
+        })
+        console.log(`${serial} - User Plugged out`)
+        const msg = {
+            type: CAR_PLUGGED_OUT,
+            serial,
+            newStatus: _newMap.status,
+            oldStatus: _currentMap.status,
+            currTime: new Date().toUTCString()
+        } as WallboxStatusChangedDTO
+        mqtt.publish('energie/tanken/events', JSON.stringify(msg))
+    }
+    // Status goes from chargin to idle -> someone has plugged out while charging
+    if (_currentMap.status === WallboxStatus.isCharging && _newMap.status === WallboxStatus.isIdle) {
+        eventBus.emit(CAR_PLUGGED_OUT, {
+            serial: _newMap.serial
+        })
+        eventBus.emit(CAR_PLUGGED_OUT_CHARGING, {
+            serial: _newMap.serial,
+            eSessionCount: _newMap.eSession
+        })
+        console.log(`${serial} - User Plugged out while charging`)
+        const msg = {
+            type: CAR_PLUGGED_OUT_CHARGING,
+            serial,
+            newStatus: _newMap.status,
+            oldStatus: _currentMap.status,
+            currTime: new Date().toUTCString()
+        } as WallboxStatusChangedDTO
+        mqtt.publish('energie/tanken/events', JSON.stringify(msg))
+    }
+
+    // Status goes from waiting to chargin -> charging has begun
+    if (_currentMap.status === WallboxStatus.isWaiting && _newMap.status === WallboxStatus.isCharging) {
+        eventBus.emit(CAR_STARTED_CHARGING, {
+            serial: _newMap.serial
+        })
+        console.log(`${serial} - Car started charging`)
+        const msg = {
+            type: CAR_STARTED_CHARGING,
             serial,
             newStatus: _newMap.status,
             oldStatus: _currentMap.status,
             currTime: new Date().toUTCString()
         } as WallboxStatusChangedDTO
         mqtt.publish('energie/tanken/status', JSON.stringify(msg))
-    // Wallbox wird aktiviert oder deaktiviert
-    } else if (_currentMap.isEnabled !== _newMap.isEnabled) {
-        console.log(`${serial} - Wallbox enabled`)
-        const msg: WallboxEnableDTO = {
-            type: 'WALLBOX_ENABLE_CHANGE',
-            isEnabled: _newMap.isEnabled,
-            serial
-        }
-        eventBus.emit('wallboxEnableChange', msg)
-        mqtt.publish('energie/wallbox/statusChange', JSON.stringify(msg))
+    }
+
+    /**
+     * STATUS
+     */
+    // Send data when vehicle is charging
+    if (_newMap.status === WallboxStatus.isCharging) {
+        const msg = {
+            type: 'CHARGING_STATUS',
+            user: null, // TODO: GET USER ID
+            isCharging: true,
+            powerW: _newMap.P/100,
+            serial: _newMap.serial,
+            eSession: _newMap.eSession,
+            currTime: new Date().toUTCString()
+        } as WallboxChargingDTO
+        mqtt.publish('energie/tanken/status', JSON.stringify(msg))
     }
 }
 
 export function mountUDPEventListener() {
-    eventBus.on('UDP', data => {
+    eventBus.on(UDP_NEW_MESSAGE, data => {
         const _prevMap = Object.assign({}, dataMap)
-        switch(data.type) {
-            case UDP_NEW_MESSAGE:
-                if(data.isData && data.message) {
-                    const trans = _transformUDPMessage(data.message)
-                    // console.log(trans.serial)
-                    if (!trans.serial) {
-                        console.log('Undefined Transfer', trans)
-                    } else {
-                        dataMap[trans.serial] = Object.keys(dataMap).includes(trans.serial) ? {...dataMap[trans.serial], ...trans} : {...trans}
-                        _detectChangeAndEmit(_prevMap, dataMap, trans.serial)
-                        // console.log(dataMap)
-                        eventBus.emit('wallboxDataChange', dataMap)
-                    }
-                    // react on state change
-                }
+        if(data.isData && data.message) {
+            const trans = _transformUDPMessage(data.message)
+            // console.log(trans.serial)
+            if (!trans.serial) {
+                console.log('Undefined Transfer', trans)
+            } else {
+                dataMap[trans.serial] = Object.keys(dataMap).includes(trans.serial) ? {...dataMap[trans.serial], ...trans} : {...trans}
+                _detectChangeAndEmit(_prevMap, dataMap, trans.serial)
+                // console.log(dataMap)
+                eventBus.emit('wallboxDataChange', dataMap)
             }
-        })
+            // react on state change
+        }
+    })
 }

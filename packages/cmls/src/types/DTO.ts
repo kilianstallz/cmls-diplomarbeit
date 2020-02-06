@@ -1,30 +1,28 @@
 import { WallboxStatus, Wallbox } from "./WallboxState";
 
-export interface WallboxStatusChangedDTO {
-    user: string | null
-    type: string
-    serial: string
+interface EventTransaction {
     currTime: string
+    serial: string
+    type: string
+}
+
+export interface WallboxStatusChangedDTO extends EventTransaction {
+    user: string | null
     oldStatus: WallboxStatus
     newStatus: WallboxStatus
 }
 
-export interface WallboxChargingDTO {
+export interface WallboxChargingDTO extends EventTransaction {
     user: string | null
-    type: string
-    serial: string
-    currTime: string
+    isCharging: true
+    powerW: number
     eSession: number
 }
 
-export interface WallboxFirstDataDTO {
-    type: string
-    serial: string
+export interface WallboxFirstDataDTO extends EventTransaction {
     map: Wallbox
 }
 
-export interface WallboxEnableDTO {
-    type: string,
-    serial: string,
+export interface WallboxEnableDTO extends EventTransaction {
     isEnabled: boolean
 }
